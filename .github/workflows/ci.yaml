@@ -68,13 +68,13 @@ jobs:
         echo "API_PRODUCT_NAME_ENCODED=$(echo ${{ env.API_PRODUCT_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
         echo "KONNECT_CONTROL_PLANE_NAME_ENCODED=$(echo ${{ vars.KONNECT_CONTROL_PLANE_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
 
-    # The API Product Version name will not be unique if just based on what we extract from the OAS - we need to add the Runtime Group Name to this
+    # The API Product Version name will not be unique if just based on what we extract from the OAS - we need to add the Control Plane Name to this
 
     - name: Concat API Product Version Variable
       run: |
         echo "API_PRODUCT_VERSION=$(echo ${{ env.API_PRODUCT_VERSION }}-${{ env.KONNECT_CONTROL_PLANE_NAME_ENCODED }})"  >> $GITHUB_ENV
 
-    # Use the Konnect Runtime Group Name to search for the ID using the Konnect Runtime Group API
+    # Use the Konnect Control Plane Name to search for the ID using the Konnect Control Plane API
 
     - name: Get Konnect Control Plane ID
       run: |
@@ -148,10 +148,10 @@ jobs:
         deck gateway diff kong.yaml \
           --konnect-addr ${{ vars.KONNECT_ADDRESS }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-runtime-group-name ${{ vars.KONNECT_CONTROL_PLANE_NAME }} \
+          --konnect-control-plane-name ${{ vars.KONNECT_CONTROL_PLANE_NAME }} \
           --select-tag ${{ env.SERVICE_TAGS }}
 
-    # Use decK dump to take a backup of the entire Runtime Group Configuration
+    # Use decK dump to take a backup of the entire Control Plane Configuration
       
     - name: Backup Existing Kong Configuration
       run: |
