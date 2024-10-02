@@ -40,6 +40,7 @@ jobs:
     # Install Inso CLI which we will use for Linting and Testing: https://docs.insomnia.rest/inso-cli/introduction
 
     - name: Install Inso CLI tool
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         curl -sL https://github.com/Kong/insomnia/releases/download/core%4010.0.0/inso-linux-10.0.0.tar.xz -o inso.tar.xz
         tar -xf inso.tar.xz -C /tmp
@@ -48,6 +49,7 @@ jobs:
     # Use Insos Export Spec command to pull our OpenAPI Spec out of the .insomnia folder and store it as a normal OAS file
 
     - name: Export OpenAPI Spec
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       working-directory: .
       run: |
         inso export spec $(yq '._id' $(echo -n .insomnia/ApiSpec/*)) --workingDir . --output ./api/oas.yaml
@@ -55,6 +57,7 @@ jobs:
     # Read the configuration file and the OpenAPI Spec and populate the variables that we will be using
 
     - name: Set Variables
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         echo "API_PRODUCT_NAME=$(yq .info.title ./api/oas.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_DESCRIPTION=$(yq .info.description ./api/oas.yaml)" >> $GITHUB_ENV
@@ -64,6 +67,7 @@ jobs:
     # The Konnect Control Plane Name and API Product Names might include characters that need to be URL encoded.
 
     - name: URL Encode Variables
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         echo "API_PRODUCT_NAME_ENCODED=$(echo ${{ env.API_PRODUCT_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
         echo "KONNECT_CONTROL_PLANE_NAME_ENCODED=$(echo ${{ vars.KONNECT_CONTROL_PLANE_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
@@ -71,12 +75,14 @@ jobs:
     # The API Product Version name will not be unique if just based on what we extract from the OAS - we need to add the Control Plane Name to this
 
     - name: Concat API Product Version Variable
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         echo "API_PRODUCT_VERSION=$(echo ${{ env.API_PRODUCT_VERSION }}-${{ env.KONNECT_CONTROL_PLANE_NAME_ENCODED }})"  >> $GITHUB_ENV
 
     # Use the Konnect Control Plane Name to search for the ID using the Konnect Control Plane API
 
     - name: Get Konnect Control Plane ID
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         echo "KONNECT_CONTROL_PLANE_ID=$(curl \
           --url "${{ vars.KONNECT_ADDRESS }}/v2/control-planes?filter%5Bname%5D=${{ env.KONNECT_CONTROL_PLANE_NAME_ENCODED }}" \
@@ -86,12 +92,14 @@ jobs:
     # Check that the OpenAPI Specification file that we exported from the Insomnia Workspace is valid and well formed
 
     - name: Lint OpenAPI Spec
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         inso lint spec ./api/oas.yaml
 
     # Use decKs openapi2kong command to generate Kong Declarative Configuration from the OpenAPI Specification exported from the Insomnia Workspace.
 
     - name: Generate Kong declarative configuration from Spec
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         deck file openapi2kong \
           --spec ./api/oas.yaml \
@@ -117,18 +125,21 @@ jobs:
     # Use decK Merge to merge together our generated Kong Declarative Configuration File with the contents of the Plugin folder in our repository
 
     - name: Merge Kong Configuration with Plugins
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         deck file merge kong-generated.yaml ./api/plugins/* -o kong.yaml
 
     # Use decK Validate to check that the new generated Kong Declarative Configuration is valid
 
     - name: Validate Kong declarative configuration
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         deck file validate kong.yaml
 
     # Publishes Kong Declarative Configuration as an artifact
 
     - name: 'Upload Kong Config Artifact'
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.SERVICE_TAGS }}-api-kong-config
@@ -336,4 +347,11 @@ jobs:
               --header 'Content-Type: application/json' \
               --header 'accept: application/json' \
               --data '{"portal_ids":["${{ vars.PORTAL_ID }}"]}'
+        else
+            curl --request PATCH \
+              --url "${{ vars.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}" \
+              --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
+              --header 'Content-Type: application/json' \
+              --header 'accept: application/json' \
+              --data '{"portal_ids":[]}'
         fi
