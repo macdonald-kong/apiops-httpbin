@@ -54,8 +54,7 @@ jobs:
 
     - name: Set Variables
       run: |
-        echo "KONNECT_PORTAL=$(echo 4abacaf1-47dc-4c07-83ff-a8801782277e)" >> $GITHUB_ENV
-        echo "KONNECT_RUNTIME_GROUP_NAME=$(yq .runtimeGroup ./config.yaml)" >> $GITHUB_ENV
+        echo "KONNECT_CONTROL_PLANE_NAME=$(yq .runtimeGroup ./config.yaml)" >> $GITHUB_ENV
         echo "KONNECT_REGION=$(yq .region ./config.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_NAME=$(yq .apiProductName ./config.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_DESCRIPTION=$(yq .info.description ./api/oas.yaml)" >> $GITHUB_ENV
@@ -69,20 +68,20 @@ jobs:
     - name: URL Encode Variables
       run: |
         echo "API_PRODUCT_NAME_ENCODED=$(echo ${{ env.API_PRODUCT_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
-        echo "KONNECT_RUNTIME_GROUP_NAME_ENCODED=$(echo ${{ env.KONNECT_RUNTIME_GROUP_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
+        echo "KONNECT_CONTROL_PLANE_NAME_ENCODED=$(echo ${{ env.KONNECT_CONTROL_PLANE_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
 
     # The API Product Version name will not be unique if just based on what we extract from the OAS - we need to add the Runtime Group Name to this
 
     - name: Concat API Product Version Variable
       run: |
-        echo "API_PRODUCT_VERSION=$(echo ${{ env.API_PRODUCT_VERSION }}-${{ env.KONNECT_RUNTIME_GROUP_NAME_ENCODED }})"  >> $GITHUB_ENV
+        echo "API_PRODUCT_VERSION=$(echo ${{ env.API_PRODUCT_VERSION }}-${{ env.KONNECT_CONTROL_PLANE_NAME_ENCODED }})"  >> $GITHUB_ENV
 
     # Use the Konnect Runtime Group Name to search for the ID using the Konnect Runtime Group API
 
     - name: Get Konnect Runtime Group ID
       run: |
-        echo "KONNECT_RUNTIME_GROUP_ID=$(curl \
-          --url "https://${{ env.KONNECT_REGION }}.api.konghq.com/v2/runtime-groups?filter%5Bname%5D=${{ env.KONNECT_RUNTIME_GROUP_NAME_ENCODED }}" \
+        echo "KONNECT_CONTROL_PLANE_ID=$(curl \
+          --url "https://${{ env.KONNECT_REGION }}.api.konghq.com/v2/runtime-groups?filter%5Bname%5D=${{ env.KONNECT_CONTROL_PLANE_NAME_ENCODED }}" \
           --header "accept: */*"  \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" | jq -r '.data[0].id')" >> $GITHUB_ENV
 
@@ -106,10 +105,10 @@ jobs:
 
     - name: Ping Kong Konnect
       run: |
-        deck ping \
+        deck gateway ping \
           --konnect-addr "https://${{ env.KONNECT_REGION }}.api.konghq.com" \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-runtime-group-name "${{ env.KONNECT_RUNTIME_GROUP_NAME }}"\
+          --konnect-runtime-group-name "${{ env.KONNECT_CONTROL_PLANE_NAME }}"\
 
     #######################################
     #
@@ -153,7 +152,7 @@ jobs:
           --state kong.yaml \
           --konnect-addr ${{ secrets.KONNECT_ADDR }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-runtime-group-name ${{ env.KONNECT_RUNTIME_GROUP_NAME }} \
+          --konnect-runtime-group-name ${{ env.KONNECT_CONTROL_PLANE_NAME }} \
           --select-tag ${{ env.SERVICE_TAGS }}
 
     # Use decK dump to take a backup of the entire Runtime Group Configuration
@@ -163,7 +162,7 @@ jobs:
         deck dump \
           --konnect-addr ${{ secrets.KONNECT_ADDR }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-runtime-group-name ${{ env.KONNECT_RUNTIME_GROUP_NAME }} \
+          --konnect-runtime-group-name ${{ env.KONNECT_CONTROL_PLANE_NAME }} \
           --output-file kong-backup.yaml
 
     # Publishes the Backup Kong Declarative Configuration as an artifact
@@ -183,7 +182,7 @@ jobs:
           --state kong.yaml \
           --konnect-addr ${{ secrets.KONNECT_ADDR }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-runtime-group-name ${{ env.KONNECT_RUNTIME_GROUP_NAME }} \
+          --konnect-runtime-group-name ${{ env.KONNECT_CONTROL_PLANE_NAME }} \
           --select-tag ${{ env.SERVICE_TAGS }}
 
     # Set a Variable containing the Service ID of the Service that we deployed - we need this to link the API Product to a Kong Service
@@ -192,7 +191,7 @@ jobs:
       id: get-service-id
       run: |
         echo "SERVICE_ID=$(curl \
-          --url "https://${{ env.KONNECT_REGION }}.api.konghq.com/v2/runtime-groups/${{ env.KONNECT_RUNTIME_GROUP_ID}}/core-entities/services?tags=${{ env.SERVICE_TAGS }}" \
+          --url "https://${{ env.KONNECT_REGION }}.api.konghq.com/v2/runtime-groups/${{ env.KONNECT_CONTROL_PLANE_ID}}/core-entities/services?tags=${{ env.SERVICE_TAGS }}" \
           --header 'accept: application/json' \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" | jq -r '.data[0].id')" >> "$GITHUB_ENV"
 
@@ -287,7 +286,7 @@ jobs:
               "publish_status":"${{ env.API_PRODUCT_VERSION_STATUS}}",
               "deprecated":false,
               "gateway_service": {
-                  "runtime_group_id":"${{ env.KONNECT_RUNTIME_GROUP_ID}}",
+                  "CONTROL_PLANE_id":"${{ env.KONNECT_CONTROL_PLANE_ID}}",
                   "id":"${{ env.SERVICE_ID }}"
                 }
             }' | jq -r '.id')" >> "$GITHUB_ENV"
@@ -341,5 +340,5 @@ jobs:
               --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
               --header 'Content-Type: application/json' \
               --header 'accept: application/json' \
-              --data '{"portal_ids":["${{ env.KONNECT_PORTAL }}"]}'
+              --data '{"portal_ids":["${{ env.PORTAL_ID }}"]}'
         fi
