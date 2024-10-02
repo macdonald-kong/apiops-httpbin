@@ -165,6 +165,7 @@ jobs:
     # Compare the new desired state represented in the generated Kong Declarative Configuration with the current state of the platform
 
     - name: Diff declarative config
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         deck gateway diff kong.yaml \
           --konnect-addr ${{ vars.KONNECT_ADDRESS }} \
