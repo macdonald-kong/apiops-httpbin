@@ -48,6 +48,7 @@ jobs:
     # Use Insos Export Spec command to pull our OpenAPI Spec out of the .insomnia folder and store it as a normal OAS file
 
     - name: Export OpenAPI Spec
+      working-directory: .
       run: inso export spec $(yq '._id' $(echo -n ./.insomnia/APISpec/*)) > ./api/oas.yaml
 
     # Read the configuration file and the OpenAPI Spec and populate the variables that we will be using
