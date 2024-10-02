@@ -308,7 +308,7 @@ jobs:
             --data '{
               "name":"${{ env.API_PRODUCT_VERSION}}",
               "publish_status":"${{ env.API_PRODUCT_VERSION_STATUS}}",
-              "deprecated":"${{ env.API_PRODUCT_DEPRECATED}}",
+              "deprecated":${{ env.API_PRODUCT_DEPRECATED}},
               "gateway_service": {
                   "control_plane_id":"${{ env.KONNECT_CONTROL_PLANE_ID}}",
                   "id":"${{ env.SERVICE_ID }}"
