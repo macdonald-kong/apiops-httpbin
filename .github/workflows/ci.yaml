@@ -140,10 +140,15 @@ jobs:
 
     # Use decK Validate to check that the new generated Kong Declarative Configuration is valid
 
+    - name: Tag Kong declarative configuration with service name
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
+      run: |
+        cat kong.yaml | deck file add-tags ${{ env.DECK_GATEWAY_SERVICE_NAME }} --output-file kong.yaml
+
     - name: Validate Kong declarative configuration
       if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
-        deck file validate kong.yaml
+        deck file validate kong.yaml 
 
     # Publishes Kong Declarative Configuration as an artifact
 
@@ -193,6 +198,7 @@ jobs:
     - name: Deploy declarative config to development environment
       id: deploy-declarative-config
       run: |
+        cat kong.yaml
         deck gateway sync kong.yaml \
           --konnect-addr ${{ vars.KONNECT_ADDRESS }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \

@@ -22,11 +22,11 @@ contents: |-2
 
     paths:
 
-      /headers:
+      /v1/headers:
         get:
           summary: Returns the request headers.
           description: Header service
-          operationId: getHeaders
+          operationId: v1GetHeaders
           tags:
           - headers
           responses:
