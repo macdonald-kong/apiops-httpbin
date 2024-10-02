@@ -66,7 +66,7 @@ jobs:
     - name: URL Encode Variables
       run: |
         echo "API_PRODUCT_NAME_ENCODED=$(echo ${{ env.API_PRODUCT_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
-        echo "KONNECT_CONTROL_PLANE_NAME_ENCODED=$(echo ${{ env.KONNECT_CONTROL_PLANE_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
+        echo "KONNECT_CONTROL_PLANE_NAME_ENCODED=$(echo ${{ vars.KONNECT_CONTROL_PLANE_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
 
     # The API Product Version name will not be unique if just based on what we extract from the OAS - we need to add the Runtime Group Name to this
 
@@ -79,7 +79,7 @@ jobs:
     - name: Get Konnect Control Plane ID
       run: |
         echo "KONNECT_CONTROL_PLANE_ID=$(curl \
-          --url "${{ env.KONNECT_ADDRESS }}/v2/control-planes?filter%5Bname%5D=${{ env.KONNECT_CONTROL_PLANE_NAME_ENCODED }}" \
+          --url "${{ vars.KONNECT_ADDRESS }}/v2/control-planes?filter%5Bname%5D=${{ env.KONNECT_CONTROL_PLANE_NAME_ENCODED }}" \
           --header "accept: */*"  \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" | jq -r '.data[0].id')" >> $GITHUB_ENV
 
@@ -104,9 +104,9 @@ jobs:
     - name: Ping Kong Konnect
       run: |
         deck gateway ping \
-          --konnect-addr "https://${{ env.KONNECT_REGION }}.api.konghq.com" \
+          --konnect-addr "${{ vars.KONNECT_ADDRESS }}" \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-runtime-group-name "${{ env.KONNECT_CONTROL_PLANE_NAME }}"\
+          --konnect-runtime-group-name "${{ vars.KONNECT_CONTROL_PLANE_NAME }}"\
 
     #######################################
     #
@@ -146,9 +146,9 @@ jobs:
     - name: Diff declarative config
       run: |
         deck gateway diff kong.yaml \
-          --konnect-addr ${{ env.KONNECT_ADDRESS }} \
+          --konnect-addr ${{ vars.KONNECT_ADDRESS }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-runtime-group-name ${{ env.KONNECT_CONTROL_PLANE_NAME }} \
+          --konnect-runtime-group-name ${{ vars.KONNECT_CONTROL_PLANE_NAME }} \
           --select-tag ${{ env.SERVICE_TAGS }}
 
     # Use decK dump to take a backup of the entire Runtime Group Configuration
@@ -156,9 +156,9 @@ jobs:
     - name: Backup Existing Kong Configuration
       run: |
         deck dump \
-          --konnect-addr ${{ env.KONNECT_ADDRESS }} \
+          --konnect-addr ${{ vars.KONNECT_ADDRESS }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-control-plane-name ${{ env.KONNECT_CONTROL_PLANE_NAME }} \
+          --konnect-control-plane-name ${{ vars.KONNECT_CONTROL_PLANE_NAME }} \
           --output-file kong-backup.yaml
 
     # Publishes the Backup Kong Declarative Configuration as an artifact
@@ -176,9 +176,9 @@ jobs:
       run: |
         deck sync \
           --state kong.yaml \
-          --konnect-addr ${{ env.KONNECT_ADDRESS }} \
+          --konnect-addr ${{ vars.KONNECT_ADDRESS }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-control-plane-name ${{ env.KONNECT_CONTROL_PLANE_NAME }} \
+          --konnect-control-plane-name ${{ vars.KONNECT_CONTROL_PLANE_NAME }} \
           --select-tag ${{ env.SERVICE_TAGS }}
 
     # Set a Variable containing the Service ID of the Service that we deployed - we need this to link the API Product to a Kong Service
@@ -187,7 +187,7 @@ jobs:
       id: get-service-id
       run: |
         echo "SERVICE_ID=$(curl \
-          --url "${{ env.KONNECT_ADDRESS }}/v2/control-planes/${{ env.KONNECT_CONTROL_PLANE_ID}}/core-entities/services?tags=${{ env.SERVICE_TAGS }}" \
+          --url "${{ vars.KONNECT_ADDRESS }}/v2/control-planes/${{ env.KONNECT_CONTROL_PLANE_ID}}/core-entities/services?tags=${{ env.SERVICE_TAGS }}" \
           --header 'accept: application/json' \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" | jq -r '.data[0].id')" >> "$GITHUB_ENV"
 
@@ -204,7 +204,7 @@ jobs:
       run: |
           echo "API_PRODUCT_ID=$(curl \
           --request GET \
-          --url "${{ env.KONNECT_ADDRESS }}/v2/api-products?filter%5Bname%5D=${{ env.API_PRODUCT_NAME_ENCODED }}" \
+          --url "${{ vars.KONNECT_ADDRESS }}/v2/api-products?filter%5Bname%5D=${{ env.API_PRODUCT_NAME_ENCODED }}" \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
           --header "Accept: application/json" | jq -r '.data[0].id')" >> "$GITHUB_ENV"
 
@@ -216,7 +216,7 @@ jobs:
         echo API_PRODUCT_ID: ${{ env.API_PRODUCT_ID }}
         if [[ "${{ env.API_PRODUCT_ID }}" == "null" ]]; then
           echo "API_PRODUCT_ID=$(curl \
-            --url ${{ env.KONNECT_ADDRESS }}/v2/api-products \
+            --url ${{ vars.KONNECT_ADDRESS }}/v2/api-products \
             --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
             --header 'Content-Type: application/json' \
             --data '{
@@ -243,7 +243,7 @@ jobs:
       run: |
         for entry in "./docs"/*
         do
-          curl -X POST ${{ env.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}/documents \
+          curl -X POST ${{ vars.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}/documents \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
           --header "Content-Type: application/json" \
           -d @$entry
@@ -262,7 +262,7 @@ jobs:
       run: |
         echo "KONNECT_API_PRODUCT_VERSION_ID=$(curl \
           --request GET \
-          --url "${{ env.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}/product-versions?filter%5Bname%5D=${{ env.KONNECT_API_PRODUCT_VERSION }}" \
+          --url "${{ vars.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}/product-versions?filter%5Bname%5D=${{ env.KONNECT_API_PRODUCT_VERSION }}" \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
           --header "Accept: application/json" | jq -r '.data[0].id')" >> "$GITHUB_ENV"
 
@@ -273,7 +273,7 @@ jobs:
       run: |      
         if [[ "${{ env.KONNECT_API_PRODUCT_VERSION_ID}}" == "null" ]]; then
           echo "KONNECT_API_PRODUCT_VERSION_ID=$(curl -X POST \
-            --url "${{ env.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}/product-versions" \
+            --url "${{ vars.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}/product-versions" \
             --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
             --header "Content-Type: application/json" \
             --header "Accept: application/json" \
@@ -332,9 +332,9 @@ jobs:
       run: |
         if [[ "${{ env.API_PRODUCT_PUBLISH }}" == true ]]; then
             curl --request PATCH \
-              --url "${{ env.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}" \
+              --url "${{ vars.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}" \
               --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
               --header 'Content-Type: application/json' \
               --header 'accept: application/json' \
-              --data '{"portal_ids":["${{ env.PORTAL_ID }}"]}'
+              --data '{"portal_ids":["${{ vars.PORTAL_ID }}"]}'
         fi
