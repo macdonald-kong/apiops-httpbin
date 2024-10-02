@@ -137,7 +137,7 @@ jobs:
     - name: Update Gateway Service Name
       if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
-        yq eval '.services[0].name = "$(DECK_GATEWAY_SERVICE_NAME)"' -i kong.yaml
+        yq eval '.services[0].name = "${{ env.DECK_GATEWAY_SERVICE_NAME }}"' -i kong.yaml
 
     # Use decK Validate to check that the new generated Kong Declarative Configuration is valid
 
