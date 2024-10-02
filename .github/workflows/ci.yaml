@@ -103,7 +103,8 @@ jobs:
           --spec ./api/oas.yaml \
           --format yaml \
           --select-tag ${{ env.DECK_GATEWAY_SERVICE_NAME }} \
-          --output-file ./kong-generated.yaml
+          --output-file ./kong-generated.yaml \
+          --no-id
 
     # Use decK Ping to check that we can connect to the Kong Konnect Control Plane
 
