@@ -1,5 +1,6 @@
 productName: "HTTPBin-Headers"
 productDescription: "This is a simple HTTPBin API based on the OpenAPI 3.0 specification."
-productPublish: false
-productVersionStatus: "unpublished"
+productPublish: true
+productVersionStatus: "published"
+productDeprecated: false
 portalId: "4abacaf1-47dc-4c07-83ff-a8801782277e"

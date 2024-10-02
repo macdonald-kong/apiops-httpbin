@@ -63,6 +63,7 @@ jobs:
         echo "API_PRODUCT_DESCRIPTION=$(yq .productDescription ./api/product/product.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_VERSION=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_ENV
         echo "API_PRODUCT_PUBLISH=$(yq .productPublish ./api/product/product.yaml)" >> $GITHUB_ENV
+        echo "API_PRODUCT_DEPRECATED=$(yq .productDeprecated ./api/product/product.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_VERSION_STATUS=$(yq .productVersionStatus ./api/product/product.yaml)" >> $GITHUB_ENV
         echo "PORTAL_ID=$(yq .portalId ./api/product/product.yaml)" >> $GITHUB_ENV
 
@@ -304,7 +305,7 @@ jobs:
             --data '{
               "name":"${{ env.API_PRODUCT_VERSION}}",
               "publish_status":"${{ env.API_PRODUCT_VERSION_STATUS}}",
-              "deprecated":false,
+              "deprecated":"${{ env.API_PRODUCT_DEPRECATED}}",
               "gateway_service": {
                   "control_plane_id":"${{ env.KONNECT_CONTROL_PLANE_ID}}",
                   "id":"${{ env.SERVICE_ID }}"
