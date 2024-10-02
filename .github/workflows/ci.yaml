@@ -56,8 +56,7 @@ jobs:
 
     # Read the configuration file and the OpenAPI Spec and populate the variables that we will be using
 
-    - name: Set Variables
-      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
+    - name: Set Variables from OAS
       run: |
         echo "API_PRODUCT_NAME=$(yq .productName ./api/product/product.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_DESCRIPTION=$(yq .productDescription ./api/product/product.yaml)" >> $GITHUB_ENV
@@ -70,7 +69,6 @@ jobs:
     # The Konnect Control Plane Name and API Product Names might include characters that need to be URL encoded.
 
     - name: URL Encode Variables
-      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         echo "API_PRODUCT_NAME_ENCODED=$(echo ${{ env.API_PRODUCT_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
         echo "KONNECT_CONTROL_PLANE_NAME_ENCODED=$(echo ${{ vars.KONNECT_CONTROL_PLANE_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
@@ -78,14 +76,12 @@ jobs:
     # Set Variables needed for plugins and service name used by decK
 
     - name: Set decK Env Variables
-      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         echo "DECK_GATEWAY_SERVICE_NAME=$(echo $API_PRODUCT_NAME_ENCODED-$API_PRODUCT_VERSION)"  >> $GITHUB_ENV
 
     # Use the Konnect Control Plane Name to search for the ID using the Konnect Control Plane API
 
     - name: Get Konnect Control Plane ID
-      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         echo "KONNECT_CONTROL_PLANE_ID=$(curl \
           --url "${{ vars.KONNECT_ADDRESS }}/v2/control-planes?filter%5Bname%5D=${{ env.KONNECT_CONTROL_PLANE_NAME_ENCODED }}" \
