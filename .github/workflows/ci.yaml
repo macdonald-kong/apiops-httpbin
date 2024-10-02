@@ -65,7 +65,6 @@ jobs:
         echo "API_PRODUCT_PUBLISH=$(yq .productPublish ./api/product/product.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_VERSION_STATUS=$(yq .productVersionStatus ./api/product/product.yaml)" >> $GITHUB_ENV
         echo "PORTAL_ID=$(yq .portalId ./api/product/product.yaml)" >> $GITHUB_ENV
-        echo "SERVICE_TAGS=$(yq '.info.title' ./api/oas.yaml)" >> $GITHUB_ENV
 
     # The Konnect Control Plane Name and API Product Names might include characters that need to be URL encoded.
 
@@ -107,7 +106,7 @@ jobs:
         deck file openapi2kong \
           --spec ./api/oas.yaml \
           --format yaml \
-          --select-tag ${{ env.SERVICE_TAGS }} \
+          --select-tag ${{ env.DECK_GATEWAY_SERVICE_NAME }} \
           --output-file ./kong-generated.yaml
 
     # Use decK Ping to check that we can connect to the Kong Konnect Control Plane
@@ -152,7 +151,7 @@ jobs:
       if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.SERVICE_TAGS }}-api-kong-config
+        name: ${{ env.DECK_GATEWAY_SERVICE_NAME }}-api-kong-config
         path: kong.yaml
 
     #######################################
@@ -169,7 +168,7 @@ jobs:
           --konnect-addr ${{ vars.KONNECT_ADDRESS }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
           --konnect-control-plane-name ${{ vars.KONNECT_CONTROL_PLANE_NAME }} \
-          --select-tag ${{ env.SERVICE_TAGS }}
+          --select-tag ${{ env.DECK_GATEWAY_SERVICE_NAME }}
 
     # Use decK dump to take a backup of the entire Control Plane Configuration
       
@@ -198,7 +197,7 @@ jobs:
           --konnect-addr ${{ vars.KONNECT_ADDRESS }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
           --konnect-control-plane-name ${{ vars.KONNECT_CONTROL_PLANE_NAME }} \
-          --select-tag ${{ env.SERVICE_TAGS }}
+          --select-tag ${{ env.DECK_GATEWAY_SERVICE_NAME }}
 
     # Set a Variable containing the Service ID of the Service that we deployed - we need this to link the API Product to a Kong Service
 
@@ -206,7 +205,7 @@ jobs:
       id: get-service-id
       run: |
         echo "SERVICE_ID=$(curl \
-          --url "${{ vars.KONNECT_ADDRESS }}/v2/control-planes/${{ env.KONNECT_CONTROL_PLANE_ID}}/core-entities/services?tags=${{ env.SERVICE_TAGS }}" \
+          --url "${{ vars.KONNECT_ADDRESS }}/v2/control-planes/${{ env.KONNECT_CONTROL_PLANE_ID}}/core-entities/services?tags=${{ env.DECK_GATEWAY_SERVICE_NAME }}" \
           --header 'accept: application/json' \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" | jq -r '.data[0].id')" >> "$GITHUB_ENV"
 
