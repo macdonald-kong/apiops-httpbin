@@ -133,13 +133,13 @@ jobs:
     # Use decK Merge to merge together our generated Kong Declarative Configuration File with the contents of the shared flow plugins
 
     - name: Merge Kong Configuration with Shared Flow Plugins for Auth
-      if: if: ${{ env.SHARED_FLOW_AUTH == 'true' && env.DELETED == 'false' }}
+      if: ${{ env.SHARED_FLOW_AUTH == 'true' && env.DELETED == 'false' }}
       run: |
         git clone https://github.com/macdonald-kong/shared-auth.git
         deck file merge kong.yaml ./shared-auth/* -o kong.yaml
 
     - name: Merge Kong Configuration with Shared Flow Plugins for Observability
-      if: if: ${{ env.SHARED_FLOW_OBSERVABILITY == 'true' && env.DELETED == 'false' }}
+      if: ${{ env.SHARED_FLOW_OBSERVABILITY == 'true' && env.DELETED == 'false' }}
       run: |
         git clone https://github.com/macdonald-kong/shared-observability.git
         deck file merge kong.yaml ./shared-observability/* -o kong.yaml
