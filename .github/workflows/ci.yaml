@@ -338,7 +338,7 @@ jobs:
     - name: Run Tests
       id: run-tests
       run: |
-        curl httpbin.org/anything
+        inso run test $(yq '._id' $(echo -n .insomnia/ApiSpec/*)) --workingDir .
 
     #######################################
     #
