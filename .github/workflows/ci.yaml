@@ -56,16 +56,16 @@ jobs:
 
     - name: Set Variables from Config
       run: |
-        echo "API_PRODUCT_NAME=$(yq .productName ./api/product/product.yaml)" >> $GITHUB_ENV
-        echo "API_PRODUCT_DESCRIPTION=$(yq .productDescription ./api/product/product.yaml)" >> $GITHUB_ENV
+        echo "API_PRODUCT_NAME=$(yq .productName ./api/config/meta.yaml)" >> $GITHUB_ENV
+        echo "API_PRODUCT_DESCRIPTION=$(yq .productDescription ./api/config/meta.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_VERSION=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_ENV
-        echo "API_PRODUCT_PUBLISH=$(yq .productPublish ./api/product/product.yaml)" >> $GITHUB_ENV
-        echo "API_PRODUCT_DEPRECATED=$(yq .productDeprecated ./api/product/product.yaml)" >> $GITHUB_ENV
-        echo "API_PRODUCT_VERSION_STATUS=$(yq .productVersionStatus ./api/product/product.yaml)" >> $GITHUB_ENV
-        echo "PORTAL_ID=$(yq .portalId ./api/product/product.yaml)" >> $GITHUB_ENV
-        echo "DELETED=$(yq .deleted ./api/product/product.yaml)" >> $GITHUB_ENV
-        echo "SHARED_FLOW_AUTH=$(yq .sharedFlowAuth ./api/product/product.yaml)" >> $GITHUB_ENV
-        echo "SHARED_FLOW_OBSERVABILITY=$(yq .sharedFlowObservability ./api/product/product.yaml)" >> $GITHUB_ENV
+        echo "API_PRODUCT_PUBLISH=$(yq .productPublish ./api/config/meta.yaml)" >> $GITHUB_ENV
+        echo "API_PRODUCT_DEPRECATED=$(yq .productDeprecated ./api/config/meta.yaml)" >> $GITHUB_ENV
+        echo "API_PRODUCT_VERSION_STATUS=$(yq .productVersionStatus ./api/config/meta.yaml)" >> $GITHUB_ENV
+        echo "PORTAL_ID=$(yq .portalId ./api/config/meta.yaml)" >> $GITHUB_ENV
+        echo "DELETED=$(yq .deleted ./api/config/meta.yaml)" >> $GITHUB_ENV
+        echo "SHARED_FLOW_AUTH=$(yq .sharedFlowAuth ./api/config/meta.yaml)" >> $GITHUB_ENV
+        echo "SHARED_FLOW_OBSERVABILITY=$(yq .sharedFlowObservability ./api/config/meta.yaml)" >> $GITHUB_ENV
 
     # The Konnect Control Plane Name and API Product Names might include characters that need to be URL encoded.
 
