@@ -64,6 +64,8 @@ jobs:
         echo "API_PRODUCT_VERSION_STATUS=$(yq .productVersionStatus ./api/product/product.yaml)" >> $GITHUB_ENV
         echo "PORTAL_ID=$(yq .portalId ./api/product/product.yaml)" >> $GITHUB_ENV
         echo "DELETED=$(yq .deleted ./api/product/product.yaml)" >> $GITHUB_ENV
+        echo "SHARED_FLOW_AUTH=$(yq .sharedFlowAuth ./api/product/product.yaml)" >> $GITHUB_ENV
+        echo "SHARED_FLOW_OBSERVABILITY=$(yq .sharedFlowObservability ./api/product/product.yaml)" >> $GITHUB_ENV
 
     # The Konnect Control Plane Name and API Product Names might include characters that need to be URL encoded.
 
@@ -94,18 +96,6 @@ jobs:
       run: |
         inso lint spec ./api/oas.yaml
 
-    # Use decKs openapi2kong command to generate Kong Declarative Configuration from the OpenAPI Specification exported from the Insomnia Workspace.
-
-    - name: Generate Kong declarative configuration from Spec
-      if: ${{ env.DELETED == 'false' }}
-      run: |
-        deck file openapi2kong \
-          --spec ./api/oas.yaml \
-          --format yaml \
-          --select-tag ${{ env.DECK_GATEWAY_SERVICE_NAME }} \
-          --output-file ./kong-generated.yaml \
-          --no-id
-
     # Use decK Ping to check that we can connect to the Kong Konnect Control Plane
 
     - name: Ping Kong Konnect
@@ -121,12 +111,38 @@ jobs:
     #
     #######################################
 
+    # Use decKs openapi2kong command to generate Kong Declarative Configuration from the OpenAPI Specification exported from the Insomnia Workspace.
+
+    - name: Generate Kong declarative configuration from Spec
+      if: ${{ env.DELETED == 'false' }}
+      run: |
+        deck file openapi2kong \
+          --spec ./api/oas.yaml \
+          --format yaml \
+          --select-tag ${{ env.DECK_GATEWAY_SERVICE_NAME }} \
+          --output-file ./kong-generated.yaml \
+          --no-id
+
     # Use decK Merge to merge together our generated Kong Declarative Configuration File with the contents of the Plugin folder in our repository
 
     - name: Merge Kong Configuration with Plugins
       if: ${{ env.DELETED == 'false' }}
       run: |
         deck file merge kong-generated.yaml ./api/plugins/* -o kong.yaml
+
+    # Use decK Merge to merge together our generated Kong Declarative Configuration File with the contents of the shared flow plugins
+
+    - name: Merge Kong Configuration with Shared Flow Plugins for Auth
+      if: ${{ env.SHARED_FLOW_AUTH == 'true' }}
+      run: |
+        git clone https://github.com/macdonald-kong/shared-auth.git
+        deck file merge kong.yaml ./shared-auth/* -o kong.yaml
+
+    - name: Merge Kong Configuration with Shared Flow Plugins for Observability
+      if: ${{ env.SHARED_FLOW_OBSERVABILITY == 'true' }}
+      run: |
+        git clone https://github.com/macdonald-kong/shared-observability.git
+        deck file merge kong.yaml ./shared-observability/* -o kong.yaml
 
     # Update Gateway Service Name so that it matches our plugins
 
