@@ -336,6 +336,7 @@ jobs:
     # Run the tests defined in our Insomnia Test Suite
 
     - name: Run Tests
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       id: run-tests
       run: |
         inso run test $(yq '._id' $(echo -n .insomnia/ApiSpec/*)) --workingDir .
