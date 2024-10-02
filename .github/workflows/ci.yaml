@@ -49,7 +49,7 @@ jobs:
 
     - name: Export OpenAPI Spec
       working-directory: .
-      run: inso export spec $(yq '._id' $(echo -n ./.insomnia/APISpec/*)) > ./api/oas.yaml
+      run: inso export spec $(yq '._id' $(echo -n .insomnia/APISpec/*)) > ./api/oas.yaml
 
     # Read the configuration file and the OpenAPI Spec and populate the variables that we will be using
 
@@ -145,7 +145,7 @@ jobs:
     - name: Diff declarative config
       run: |
         deck gateway diff kong.yaml \
-          --konnect-addr ${{ secrets.KONNECT_ADDR }} \
+          --konnect-addr ${{ env.KONNECT_ADDRESS }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
           --konnect-runtime-group-name ${{ env.KONNECT_CONTROL_PLANE_NAME }} \
           --select-tag ${{ env.SERVICE_TAGS }}
@@ -215,7 +215,7 @@ jobs:
         echo API_PRODUCT_ID: ${{ env.API_PRODUCT_ID }}
         if [[ "${{ env.API_PRODUCT_ID }}" == "null" ]]; then
           echo "API_PRODUCT_ID=$(curl \
-            --url https://${{ env.KONNECT_REGION }}.api.konghq.com/v2/api-products \
+            --url ${{ env.KONNECT_ADDRESS }}/v2/api-products \
             --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
             --header 'Content-Type: application/json' \
             --data '{
@@ -242,7 +242,7 @@ jobs:
       run: |
         for entry in "./docs"/*
         do
-          curl -X POST https://${{ env.KONNECT_REGION }}.api.konghq.com/v2/api-products/${{ env.API_PRODUCT_ID }}/documents \
+          curl -X POST ${{ env.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}/documents \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
           --header "Content-Type: application/json" \
           -d @$entry
@@ -261,7 +261,7 @@ jobs:
       run: |
         echo "KONNECT_API_PRODUCT_VERSION_ID=$(curl \
           --request GET \
-          --url "https://${{ env.KONNECT_REGION }}.api.konghq.com/v2/api-products/${{ env.API_PRODUCT_ID }}/product-versions?filter%5Bname%5D=${{ env.KONNECT_API_PRODUCT_VERSION }}" \
+          --url "${{ env.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}/product-versions?filter%5Bname%5D=${{ env.KONNECT_API_PRODUCT_VERSION }}" \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
           --header "Accept: application/json" | jq -r '.data[0].id')" >> "$GITHUB_ENV"
 
@@ -272,7 +272,7 @@ jobs:
       run: |      
         if [[ "${{ env.KONNECT_API_PRODUCT_VERSION_ID}}" == "null" ]]; then
           echo "KONNECT_API_PRODUCT_VERSION_ID=$(curl -X POST \
-            --url "https://${{ env.KONNECT_REGION }}.api.konghq.com/v2/api-products/${{ env.API_PRODUCT_ID }}/product-versions" \
+            --url "${{ env.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}/product-versions" \
             --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
             --header "Content-Type: application/json" \
             --header "Accept: application/json" \
@@ -302,7 +302,7 @@ jobs:
       id: upload-oas
       run: |
         curl -v \
-          --url "https://${{ env.KONNECT_REGION }}.api.konghq.com/v2/api-products/${{ env.API_PRODUCT_ID }}/product-versions/${{ env.KONNECT_API_PRODUCT_VERSION_ID }}/specifications" \
+          --url "${{ env.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}/product-versions/${{ env.KONNECT_API_PRODUCT_VERSION_ID }}/specifications" \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
           --header "Content-Type: application/json" \
           --header "Accept: application/json" \
@@ -331,7 +331,7 @@ jobs:
       run: |
         if [[ "${{ env.API_PRODUCT_PUBLISH }}" == true ]]; then
             curl --request PATCH \
-              --url "${{ secrets.KONNECT_ADDR }}/v2/api-products/${{ env.API_PRODUCT_ID }}" \
+              --url "${{ env.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}" \
               --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
               --header 'Content-Type: application/json' \
               --header 'accept: application/json' \
