@@ -1,2 +1,5 @@
 productName: "Employees Directory"
 productDescription: "This is a sample Employee Directory Server API based on the OpenAPI 3.0 specification."
+productPublish: true
+productVersionStatus: "published"
+portalId: "4abacaf1-47dc-4c07-83ff-a8801782277e"

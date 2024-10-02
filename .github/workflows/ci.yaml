@@ -7,13 +7,13 @@
 # DISCLAIMER: DO NOT USE THIS IN PRODUCTION - FOR DEMONSTRATION PURPOSES ONLY
 #
 
-name: CI
+name: APIOps
 
 on:
 
   push:
     branches: 
-      - main
+      - '**'
 
   workflow_dispatch:
 
@@ -62,6 +62,9 @@ jobs:
         echo "API_PRODUCT_NAME=$(yq .productName ./api/product/product.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_DESCRIPTION=$(yq .productDescription ./api/product/product.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_VERSION=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_ENV
+        echo "API_PRODUCT_PUBLISH=$(yq .productPublish ./api/product/product.yaml)" >> $GITHUB_ENV
+        echo "API_PRODUCT_VERSION_STATUS=$(yq .productVersionStatus ./api/product/product.yaml)" >> $GITHUB_ENV
+        echo "PORTAL_ID=$(yq .4abacaf1-47dc-4c07-83ff-a8801782277e ./api/product/product.yaml)" >> $GITHUB_ENV
         echo "SERVICE_TAGS=$(yq '.info.title' ./api/oas.yaml)" >> $GITHUB_ENV
 
     # The Konnect Control Plane Name and API Product Names might include characters that need to be URL encoded.
@@ -282,7 +285,7 @@ jobs:
             --header "Accept: application/json" \
             --data '{
               "name":"${{ env.API_PRODUCT_VERSION}}",
-              "publish_status":"${{ vars.API_PRODUCT_VERSION_STATUS}}",
+              "publish_status":"${{ env.API_PRODUCT_VERSION_STATUS}}",
               "deprecated":false,
               "gateway_service": {
                   "control_plane_id":"${{ env.KONNECT_CONTROL_PLANE_ID}}",
@@ -333,13 +336,13 @@ jobs:
 
     - name: Publish to Developer Portal
       run: |
-        if [[ "${{ vars.API_PRODUCT_PUBLISH }}" == true ]]; then
+        if [[ "${{ env.API_PRODUCT_PUBLISH }}" == true ]]; then
             curl --request PATCH \
               --url "${{ vars.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}" \
               --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
               --header 'Content-Type: application/json' \
               --header 'accept: application/json' \
-              --data '{"portal_ids":["${{ vars.PORTAL_ID }}"]}'
+              --data '{"portal_ids":["${{ env.PORTAL_ID }}"]}'
         else
             curl --request PATCH \
               --url "${{ vars.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}" \
