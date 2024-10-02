@@ -80,7 +80,7 @@ jobs:
     - name: Set decK Env Variables
       if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
-        echo "DECK_GATEWAY_SERVICE_NAME=$(echo $API_PRODUCT_NAME_ENCODED-$KONNECT_API_PRODUCT_VERSION)"  >> $GITHUB_ENV
+        echo "DECK_GATEWAY_SERVICE_NAME=$(echo $API_PRODUCT_NAME_ENCODED-$API_PRODUCT_VERSION)"  >> $GITHUB_ENV
 
     # Use the Konnect Control Plane Name to search for the ID using the Konnect Control Plane API
 
