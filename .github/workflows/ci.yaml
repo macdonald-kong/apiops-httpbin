@@ -27,7 +27,7 @@ jobs:
     steps:
     
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # Install Kongs decK tool: https://docs.konghq.com/deck/latest/
 
@@ -167,7 +167,7 @@ jobs:
 
     - name: 'Upload Kong Config Artifact'
       if: ${{ env.DELETED == 'false' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.DECK_GATEWAY_SERVICE_NAME }}-api-kong-config
         path: kong.yaml
