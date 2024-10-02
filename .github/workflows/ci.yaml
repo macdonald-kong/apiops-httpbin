@@ -329,7 +329,7 @@ jobs:
 
     - name: Publish to Developer Portal
       run: |
-        if [[ "${{ env.API_PRODUCT_PUBLISH }}" == true ]]; then
+        if [[ "${{ vars.API_PRODUCT_PUBLISH }}" == true ]]; then
             curl --request PATCH \
               --url "${{ vars.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}" \
               --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
