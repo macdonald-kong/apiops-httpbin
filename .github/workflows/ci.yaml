@@ -155,7 +155,7 @@ jobs:
       
     - name: Backup Existing Kong Configuration
       run: |
-        deck dump \
+        deck gateway dump \
           --konnect-addr ${{ vars.KONNECT_ADDRESS }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
           --konnect-control-plane-name ${{ vars.KONNECT_CONTROL_PLANE_NAME }} \
@@ -174,8 +174,7 @@ jobs:
     - name: Deploy declarative config to development environment
       id: deploy-declarative-config
       run: |
-        deck sync \
-          --state kong.yaml \
+        deck gateway sync kong.yaml \
           --konnect-addr ${{ vars.KONNECT_ADDRESS }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
           --konnect-control-plane-name ${{ vars.KONNECT_CONTROL_PLANE_NAME }} \
