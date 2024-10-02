@@ -64,7 +64,7 @@ jobs:
         echo "API_PRODUCT_VERSION=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_ENV
         echo "API_PRODUCT_PUBLISH=$(yq .productPublish ./api/product/product.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_VERSION_STATUS=$(yq .productVersionStatus ./api/product/product.yaml)" >> $GITHUB_ENV
-        echo "PORTAL_ID=$(yq .4abacaf1-47dc-4c07-83ff-a8801782277e ./api/product/product.yaml)" >> $GITHUB_ENV
+        echo "PORTAL_ID=$(yq .portalId ./api/product/product.yaml)" >> $GITHUB_ENV
         echo "SERVICE_TAGS=$(yq '.info.title' ./api/oas.yaml)" >> $GITHUB_ENV
 
     # The Konnect Control Plane Name and API Product Names might include characters that need to be URL encoded.
@@ -74,6 +74,13 @@ jobs:
       run: |
         echo "API_PRODUCT_NAME_ENCODED=$(echo ${{ env.API_PRODUCT_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
         echo "KONNECT_CONTROL_PLANE_NAME_ENCODED=$(echo ${{ vars.KONNECT_CONTROL_PLANE_NAME }} | sed 's/ /%20/g')"  >> $GITHUB_ENV
+
+    # Set Variables needed for plugins and service name used by decK
+
+    - name: Set decK Env Variables
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
+      run: |
+        echo "DECK_GATEWAY_SERVICE_NAME=$(echo $API_PRODUCT_NAME_ENCODED-$KONNECT_API_PRODUCT_VERSION)"  >> $GITHUB_ENV
 
     # Use the Konnect Control Plane Name to search for the ID using the Konnect Control Plane API
 
@@ -125,6 +132,13 @@ jobs:
       run: |
         deck file merge kong-generated.yaml ./api/plugins/* -o kong.yaml
 
+    # Update Gateway Service Name so that it matches our plugins
+
+    - name: Update Gateway Service Name
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
+      run: |
+        yq eval '.services[0].name = "$(DECK_GATEWAY_SERVICE_NAME)"' -i kong.yaml
+
     # Use decK Validate to check that the new generated Kong Declarative Configuration is valid
 
     - name: Validate Kong declarative configuration
@@ -140,7 +154,6 @@ jobs:
       with:
         name: ${{ env.SERVICE_TAGS }}-api-kong-config
         path: kong.yaml
-
 
     #######################################
     #
