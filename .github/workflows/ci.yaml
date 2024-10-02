@@ -51,6 +51,9 @@ jobs:
       working-directory: .
       run: |
         pwd
+        ls -al
+        cd ..
+        ls -al
         inso export spec $(yq '._id' $(echo -n .insomnia/APISpec/*)) --workingDir . --output ./api/oas.yaml
 
     # Read the configuration file and the OpenAPI Spec and populate the variables that we will be using
