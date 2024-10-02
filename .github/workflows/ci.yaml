@@ -48,22 +48,18 @@ jobs:
     # Use Insos Export Spec command to pull our OpenAPI Spec out of the .insomnia folder and store it as a normal OAS file
 
     - name: Export OpenAPI Spec
-      run: inso export spec $(yq '.name' $(echo -n ./.insomnia/Workspace/*)) > ./api/oas.yaml
+      run: inso export spec $(yq '._id' $(echo -n ./.insomnia/APISpec/*)) > ./api/oas.yaml
 
     # Read the configuration file and the OpenAPI Spec and populate the variables that we will be using
 
     - name: Set Variables
       run: |
-        echo "KONNECT_CONTROL_PLANE_NAME=$(yq .runtimeGroup ./config.yaml)" >> $GITHUB_ENV
-        echo "KONNECT_REGION=$(yq .region ./config.yaml)" >> $GITHUB_ENV
-        echo "API_PRODUCT_NAME=$(yq .apiProductName ./config.yaml)" >> $GITHUB_ENV
+        echo "API_PRODUCT_NAME=$(yq .info.title ./api/oas.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_DESCRIPTION=$(yq .info.description ./api/oas.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_VERSION=$(yq .info.version ./api/oas.yaml)" >> $GITHUB_ENV
-        echo "API_PRODUCT_VERSION_STATUS=$(yq .versionStatus ./config.yaml)" >> $GITHUB_ENV
-        echo "API_PRODUCT_PUBLISH=$(yq .publishToPortal ./config.yaml)" >> $GITHUB_ENV
         echo "SERVICE_TAGS=$(yq '.info.title' ./api/oas.yaml)" >> $GITHUB_ENV
 
-    # The Konnect Runtime Group Name and API Product Names might include characters that need to be URL encoded.
+    # The Konnect Control Plane Name and API Product Names might include characters that need to be URL encoded.
 
     - name: URL Encode Variables
       run: |
@@ -78,10 +74,10 @@ jobs:
 
     # Use the Konnect Runtime Group Name to search for the ID using the Konnect Runtime Group API
 
-    - name: Get Konnect Runtime Group ID
+    - name: Get Konnect Control Plane ID
       run: |
         echo "KONNECT_CONTROL_PLANE_ID=$(curl \
-          --url "https://${{ env.KONNECT_REGION }}.api.konghq.com/v2/runtime-groups?filter%5Bname%5D=${{ env.KONNECT_CONTROL_PLANE_NAME_ENCODED }}" \
+          --url "${{ env.KONNECT_ADDRESS }}/v2/control-planes?filter%5Bname%5D=${{ env.KONNECT_CONTROL_PLANE_NAME_ENCODED }}" \
           --header "accept: */*"  \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" | jq -r '.data[0].id')" >> $GITHUB_ENV
 
@@ -120,14 +116,13 @@ jobs:
 
     - name: Merge Kong Configuration with Plugins
       run: |
-        deck file merge ./kong-generated.yaml ./api/plugins/* -o kong.yaml
+        deck file merge kong-generated.yaml ./api/plugins/* -o kong.yaml
 
     # Use decK Validate to check that the new generated Kong Declarative Configuration is valid
 
     - name: Validate Kong declarative configuration
       run: |
-        deck validate \
-          --state kong.yaml
+        deck file validate kong.yaml
 
     # Publishes Kong Declarative Configuration as an artifact
 
@@ -148,8 +143,7 @@ jobs:
 
     - name: Diff declarative config
       run: |
-        deck diff \
-          --state kong.yaml \
+        deck gateway diff kong.yaml \
           --konnect-addr ${{ secrets.KONNECT_ADDR }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
           --konnect-runtime-group-name ${{ env.KONNECT_CONTROL_PLANE_NAME }} \
@@ -160,9 +154,9 @@ jobs:
     - name: Backup Existing Kong Configuration
       run: |
         deck dump \
-          --konnect-addr ${{ secrets.KONNECT_ADDR }} \
+          --konnect-addr ${{ env.KONNECT_ADDRESS }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-runtime-group-name ${{ env.KONNECT_CONTROL_PLANE_NAME }} \
+          --konnect-control-plane-name ${{ env.KONNECT_CONTROL_PLANE_NAME }} \
           --output-file kong-backup.yaml
 
     # Publishes the Backup Kong Declarative Configuration as an artifact
@@ -180,9 +174,9 @@ jobs:
       run: |
         deck sync \
           --state kong.yaml \
-          --konnect-addr ${{ secrets.KONNECT_ADDR }} \
+          --konnect-addr ${{ env.KONNECT_ADDRESS }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-runtime-group-name ${{ env.KONNECT_CONTROL_PLANE_NAME }} \
+          --konnect-control-plane-name ${{ env.KONNECT_CONTROL_PLANE_NAME }} \
           --select-tag ${{ env.SERVICE_TAGS }}
 
     # Set a Variable containing the Service ID of the Service that we deployed - we need this to link the API Product to a Kong Service
@@ -191,7 +185,7 @@ jobs:
       id: get-service-id
       run: |
         echo "SERVICE_ID=$(curl \
-          --url "https://${{ env.KONNECT_REGION }}.api.konghq.com/v2/runtime-groups/${{ env.KONNECT_CONTROL_PLANE_ID}}/core-entities/services?tags=${{ env.SERVICE_TAGS }}" \
+          --url "${{ env.KONNECT_ADDRESS }}/v2/control-planes/${{ env.KONNECT_CONTROL_PLANE_ID}}/core-entities/services?tags=${{ env.SERVICE_TAGS }}" \
           --header 'accept: application/json' \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" | jq -r '.data[0].id')" >> "$GITHUB_ENV"
 
@@ -208,7 +202,7 @@ jobs:
       run: |
           echo "API_PRODUCT_ID=$(curl \
           --request GET \
-          --url "https://${{ env.KONNECT_REGION }}.api.konghq.com/v2/api-products?filter%5Bname%5D=${{ env.API_PRODUCT_NAME_ENCODED }}" \
+          --url "${{ env.KONNECT_ADDRESS }}/v2/api-products?filter%5Bname%5D=${{ env.API_PRODUCT_NAME_ENCODED }}" \
           --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
           --header "Accept: application/json" | jq -r '.data[0].id')" >> "$GITHUB_ENV"
 
