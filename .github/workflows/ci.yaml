@@ -40,7 +40,6 @@ jobs:
     # Install Inso CLI which we will use for Linting and Testing: https://docs.insomnia.rest/inso-cli/introduction
 
     - name: Install Inso CLI tool
-      if: ${{ env.DELETED == 'false' }}
       run: |
         curl -sL https://github.com/Kong/insomnia/releases/download/core%4010.0.0/inso-linux-10.0.0.tar.xz -o inso.tar.xz
         tar -xf inso.tar.xz -C /tmp
@@ -49,7 +48,6 @@ jobs:
     # Use Insos Export Spec command to pull our OpenAPI Spec out of the .insomnia folder and store it as a normal OAS file
 
     - name: Export OpenAPI Spec
-      if: ${{ env.DELETED == 'false' }}
       working-directory: .
       run: |
         inso export spec $(yq '._id' $(echo -n .insomnia/ApiSpec/*)) --workingDir . --output ./api/oas.yaml
