@@ -113,7 +113,7 @@ jobs:
         deck gateway ping \
           --konnect-addr "${{ vars.KONNECT_ADDRESS }}" \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-control-plane-name "${{ vars.KONNECT_CONTROL_PLANE_NAME }}"\
+          --konnect-control-plane-name "${{ vars.KONNECT_CONTROL_PLANE_NAME }}"
 
     #######################################
     #
@@ -197,7 +197,6 @@ jobs:
       if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       id: deploy-declarative-config
       run: |
-        cat kong.yaml
         deck gateway sync kong.yaml \
           --konnect-addr ${{ vars.KONNECT_ADDRESS }} \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
@@ -390,4 +389,9 @@ jobs:
       if: ${{ vars.LIFECYCLE_STAGE == 'deleted' }}
       id: deck-reset
       run: |
-        deck gateway reset --select-tag ${{ env.DECK_GATEWAY_SERVICE_NAME }}
+        deck gateway reset \
+          --konnect-addr "${{ vars.KONNECT_ADDRESS }}" \
+          --konnect-token ${{ secrets.KONNECT_TOKEN }} \
+          --konnect-control-plane-name "${{ vars.KONNECT_CONTROL_PLANE_NAME }}" \
+          --select-tag ${{ env.DECK_GATEWAY_SERVICE_NAME }} \
+          --force
