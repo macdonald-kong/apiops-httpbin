@@ -1,0 +1,136 @@
+_id: spc_967292873c58454cbfb1f1c65ad08e4f
+type: ApiSpec
+parentId: wrk_db67bbd966be4705b38e68aa5d81242f
+modified: 1727874284805
+created: 1727874164865
+fileName: New Document
+contents: >2
+    openapi: 3.0.2
+
+
+    info:
+      title: employees-directory-v1-dev
+      description: "This is a sample Employee Directory Server API based on the OpenAPI 3.0 specification."
+      termsOfService: https://konghq.com/terms
+      contact:
+        email: david.macdonald@konghq.com
+      license:
+        name: Apache 2.0
+        url: http://www.apache.org/licenses/LICENSE-2.0.html
+      version: 1.0.1
+
+    externalDocs:
+      description: Find out more on our Developer Portal
+      url: https://kong243cd87c.us.portal.konghq.com/
+
+    servers:
+
+    - url: http://localhost:8000
+      description: Dev Environment
+
+    tags:
+
+    - name: employees
+      description: Everything about our Employees
+      externalDocs:
+        description: Find out more on our Developer Portal
+        url: https://kong243cd87c.us.portal.konghq.com/
+
+    paths:
+      /api/employees:
+        get:
+          tags:
+          - employee
+          summary: Get all employees
+          description: Returns all employees
+          operationId: getEmployees
+          responses:
+            "200":
+              description: successful operation
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/EmployeeResponse'
+        post:
+          tags:
+          - employee
+          summary: Create a new employee
+          description: Create a new employee
+          operationId: addEmployee
+          responses:
+            "200":
+              description: successful operation
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/EmployeeResponse'
+          requestBody:
+            description: Create a new employee in the directory
+            required: true
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/EmployeeRequest'
+
+      /api/employees/{employeeId}:
+        get:
+          tags:
+          - employee
+          summary: Find employee by ID
+          description: Returns a single employee
+          operationId: getEmployeeById
+          parameters:
+          - name: employeeId
+            in: path
+            description: ID of employee to return
+            required: true
+            schema:
+              type: integer
+              format: int64
+          responses:
+            "200":
+              description: successful operation
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/EmployeeResponse'
+            "400":
+              description: Invalid Employee ID supplied
+            "404":
+              description: Employee not found
+
+    components:
+
+      schemas:
+      
+        EmployeeRequest:
+         type: object
+         properties:
+           id:
+             type: string
+             example: "1234"
+           name:
+             type: string
+             example: John Doe
+           jobTitle:
+             type: string
+             example: Solutions Engineer
+           email:
+             type: string
+             example: john@email.com
+        EmployeeResponse:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "1234"
+            name:
+              type: string
+              example: John Doe
+            jobTitle:
+              type: string
+              example: Solutions Engineer
+            email:
+              type: string
+              example: john@email.com
+contentType: yaml
