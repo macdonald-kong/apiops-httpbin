@@ -106,7 +106,7 @@ jobs:
         deck gateway ping \
           --konnect-addr "${{ vars.KONNECT_ADDRESS }}" \
           --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-runtime-group-name "${{ vars.KONNECT_CONTROL_PLANE_NAME }}"\
+          --konnect-control-plane-name "${{ vars.KONNECT_CONTROL_PLANE_NAME }}"\
 
     #######################################
     #
