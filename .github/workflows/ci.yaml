@@ -278,7 +278,7 @@ jobs:
             --header "Accept: application/json" \
             --data '{
               "name":"${{ env.API_PRODUCT_VERSION}}",
-              "publish_status":"${{ env.API_PRODUCT_VERSION_STATUS}}",
+              "publish_status":"${{ vars.API_PRODUCT_VERSION_STATUS}}",
               "deprecated":false,
               "gateway_service": {
                   "control_plane_id":"${{ env.KONNECT_CONTROL_PLANE_ID}}",
