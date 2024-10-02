@@ -197,6 +197,7 @@ jobs:
     # Uses the deck sync command to push our generated Kong Declarative Configuration to the Kong Konnect Control Plane
 
     - name: Deploy declarative config to development environment
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       id: deploy-declarative-config
       run: |
         cat kong.yaml
@@ -209,6 +210,7 @@ jobs:
     # Set a Variable containing the Service ID of the Service that we deployed - we need this to link the API Product to a Kong Service
 
     - name: Get Service ID
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       id: get-service-id
       run: |
         echo "SERVICE_ID=$(curl \
@@ -225,6 +227,7 @@ jobs:
     # Checks if an API Product Version already exists so that we don't create a duplicate each time this is run
 
     - name: Get API Product ID if it already exists
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       id: get-api-product-id
       run: |
           echo "API_PRODUCT_ID=$(curl \
@@ -236,6 +239,7 @@ jobs:
     # Create a new API Product if the API Product ID from the previous script is null
 
     - name: Create API Product
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       id: create-api-product
       run: |
         echo API_PRODUCT_ID: ${{ env.API_PRODUCT_ID }}
@@ -253,6 +257,7 @@ jobs:
     # Base64 encode each markdown file in the portal_assets folder and inject each into the required json payload to send to the Konnect API Products API
 
     - name: Prepare Static Documentation
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       id: prepare-static-docs
       run: |        
         mkdir docs
@@ -264,6 +269,7 @@ jobs:
     # For each of the Json payloads that we have generated in the previous step, send them to the API Products Documents API to upload
 
     - name: Upload Static Documentation
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       id: upload-static-docs
       run: |
         for entry in "./docs"/*
@@ -283,6 +289,7 @@ jobs:
     # Checks if an API Product Version already exists so that we don't create a duplicate each time this is run
 
     - name: Get API Product Version ID if it already exists 
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       id: get-api-product-version-id
       run: |
         echo "KONNECT_API_PRODUCT_VERSION_ID=$(curl \
@@ -294,6 +301,7 @@ jobs:
     # Create a new API Product Version if the API Product Version ID from the previous script is null
 
     - name: Create API Product Version 
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       id: create-api-product-version
       run: |      
         if [[ "${{ env.KONNECT_API_PRODUCT_VERSION_ID}}" == "null" ]]; then
@@ -316,6 +324,7 @@ jobs:
     # Add the OAS to the JSON Payload required by the Konnect Product API Version API and output as a file
 
     - name: Prepare OpenAPI Specification 
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       id: prepare-oas
       run: |
         yq -i '.servers[0].url = "${{ secrets.GATEWAY_URL }}"' ./api/oas.yaml
@@ -325,6 +334,7 @@ jobs:
     # Upload the prepared OAS JSON Payload to the API Product Version
 
     - name: Upload OpenAPI Specification to API Product Version
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       id: upload-oas
       run: |
         curl -v \
@@ -355,6 +365,7 @@ jobs:
     #######################################
 
     - name: Publish to Developer Portal
+      if: ${{ vars.LIFECYCLE_STAGE != 'deleted' }}
       run: |
         if [[ "${{ env.API_PRODUCT_PUBLISH }}" == true ]]; then
             curl --request PATCH \
@@ -371,3 +382,15 @@ jobs:
               --header 'accept: application/json' \
               --data '{"portal_ids":[]}'
         fi
+
+    #######################################
+    #
+    #   DELETION FLOW
+    #
+    #######################################
+
+    - name: Delete Service Routes and Plugins
+      if: ${{ vars.LIFECYCLE_STAGE == 'deleted' }}
+      id: deck-reset
+      run: |
+        deck gateway reset --select-tag ${{ env.DECK_GATEWAY_SERVICE_NAME }}
