@@ -1,9 +1,9 @@
 _id: req_dcb313c0e06b416ba02e9bd719242442
 type: Request
 parentId: fld_136d5a3ff888466690cdc707be51398d
-modified: 1727963871137
+modified: 1727963996863
 created: 1727890430092
-url: "{{ _.base_url }}/v1/headers"
+url: "{{ _.base_url }}/v2/headers"
 name: Returns the request headers.
 description: Header service
 method: GET
