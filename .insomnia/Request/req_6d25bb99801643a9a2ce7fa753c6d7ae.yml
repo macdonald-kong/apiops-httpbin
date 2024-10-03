@@ -1,7 +1,7 @@
 _id: req_6d25bb99801643a9a2ce7fa753c6d7ae
 type: Request
 parentId: fld_136d5a3ff888466690cdc707be51398d
-modified: 1727963991857
+modified: 1727964577402
 created: 1727959727973
 url: "{{ _.base_url }}/v2/headers"
 name: Wrong Method
@@ -9,7 +9,12 @@ description: Header service
 method: POST
 body: {}
 parameters: []
-headers: []
+headers:
+  - id: pair_0b59ac9921c64a7d807f399398ea3f85
+    name: apikey
+    value: KxOXNk2njMrnSj4pg2lEnRU9ZADYWKh5
+    description: ""
+    disabled: false
 authentication: {}
 preRequestScript: null
 metaSortKey: -1727612645340.5

@@ -1,11 +1,11 @@
 _id: env_c145194f1fe6bfdf2dfdc9f6a5ae32a1233b6272
 type: Environment
 parentId: wrk_db67bbd966be4705b38e68aa5d81242f
-modified: 1727890505650
+modified: 1727964423623
 created: 1727874164886
 name: Base Environment
 data:
-  base_url: https://httpbin.konghq.com
+  base_url: http://34.147.255.1:8000
 dataPropertyOrder:
   "&":
     - base_url

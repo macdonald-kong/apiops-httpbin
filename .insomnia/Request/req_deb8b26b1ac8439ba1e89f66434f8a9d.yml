@@ -1,7 +1,7 @@
 _id: req_deb8b26b1ac8439ba1e89f66434f8a9d
 type: Request
 parentId: fld_136d5a3ff888466690cdc707be51398d
-modified: 1727963994528
+modified: 1727964574247
 created: 1727959628477
 url: "{{ _.base_url }}/v2/headers/1234"
 name: Wrong path returns 404
@@ -9,7 +9,12 @@ description: Header service
 method: GET
 body: {}
 parameters: []
-headers: []
+headers:
+  - id: pair_bdd2251f0e704673978abc002a452d75
+    name: apikey
+    value: KxOXNk2njMrnSj4pg2lEnRU9ZADYWKh5
+    description: ""
+    disabled: false
 authentication: {}
 preRequestScript: null
 metaSortKey: -1727612645440.5
