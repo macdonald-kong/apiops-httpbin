@@ -1,9 +1,9 @@
 _id: req_deb8b26b1ac8439ba1e89f66434f8a9d
 type: Request
 parentId: fld_136d5a3ff888466690cdc707be51398d
-modified: 1727964574247
+modified: 1727965470768
 created: 1727959628477
-url: "{{ _.base_url }}/v2/headers/1234"
+url: "{{ _.base_url }}/v3/headers/1234"
 name: Wrong path returns 404
 description: Header service
 method: GET
