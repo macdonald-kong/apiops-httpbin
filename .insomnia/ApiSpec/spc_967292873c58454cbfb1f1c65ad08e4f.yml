@@ -1,13 +1,13 @@
 _id: spc_967292873c58454cbfb1f1c65ad08e4f
 type: ApiSpec
 parentId: wrk_db67bbd966be4705b38e68aa5d81242f
-modified: 1727965463858
+modified: 1728031831161
 created: 1727874164865
 fileName: New Document
 contents: |-2
     openapi: 3.0.1
     info:
-      version: '3.0'
+      version: '4.0'
       title: HTTPBin-Headers
       description: HTTPBin Headers Demonstration Spec
       contact: 
@@ -22,11 +22,11 @@ contents: |-2
 
     paths:
 
-      /v3/headers:
+      /v4/headers:
         get:
           summary: Returns the request headers.
           description: Header service
-          operationId: v3GetHeaders
+          operationId: v4GetHeaders
           tags:
           - headers
           responses:
