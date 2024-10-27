@@ -41,7 +41,7 @@ jobs:
 
     - name: Install Inso CLI tool
       run: |
-        curl -sL https://github.com/Kong/insomnia/releases/download/core%4010.0.0/inso-linux-10.0.0.tar.xz -o inso.tar.xz
+        curl -sL https://github.com/Kong/insomnia/releases/download/core%4010.1.1/inso-linux-10.1.1.tar.xz -o inso.tar.xz
         tar -xf inso.tar.xz -C /tmp
         sudo cp /tmp/inso /usr/local/bin/
 
