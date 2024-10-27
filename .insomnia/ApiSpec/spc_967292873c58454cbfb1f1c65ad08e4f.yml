@@ -1,15 +1,15 @@
 _id: spc_967292873c58454cbfb1f1c65ad08e4f
 type: ApiSpec
 parentId: wrk_db67bbd966be4705b38e68aa5d81242f
-modified: 1727890679752
+modified: 1730069862089
 created: 1727874164865
-fileName: New Document
+fileName: apiops.git
 contents: |-2
     openapi: 3.0.1
     info:
       version: '1.0'
       title: HTTPBin-Headers
-      description: HTTPBin Headers Demonstration Spec
+      description: HTTPBin Headers Demo Spec v1.0
       contact: 
         email: david.macdonald@konghq.com
 

@@ -1,20 +1,15 @@
 _id: req_dcb313c0e06b416ba02e9bd719242442
 type: Request
 parentId: fld_136d5a3ff888466690cdc707be51398d
-modified: 1727964825555
+modified: 1727890516711
 created: 1727890430092
-url: "{{ _.base_url }}/v1/headers"
+url: "{{ _.base_url }}/headers"
 name: Returns the request headers.
 description: Header service
 method: GET
 body: {}
 parameters: []
-headers:
-  - id: pair_de5d0abdb7274a5fbbd601b26e31c0d4
-    name: apikey
-    value: KxOXNk2njMrnSj4pg2lEnRU9ZADYWKh5
-    description: ""
-    disabled: false
+headers: []
 authentication: {}
 preRequestScript: null
 metaSortKey: -1727890430092
