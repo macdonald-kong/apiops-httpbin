@@ -1,7 +1,7 @@
 _id: req_6d25bb99801643a9a2ce7fa753c6d7ae
 type: Request
 parentId: fld_136d5a3ff888466690cdc707be51398d
-modified: 1727959733009
+modified: 1730388167026
 created: 1727959727973
 url: "{{ _.base_url }}/headers"
 name: Wrong Method
@@ -10,7 +10,9 @@ method: POST
 body: {}
 parameters: []
 headers: []
-authentication: {}
+authentication:
+  type: oauth2
+  grantType: authorization_code
 preRequestScript: null
 metaSortKey: -1727612645340.5
 isPrivate: false
