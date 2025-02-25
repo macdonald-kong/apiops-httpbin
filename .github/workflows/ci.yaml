@@ -202,7 +202,7 @@ jobs:
     # Publishes the Backup Kong Declarative Configuration as an artifact
 
     - name: 'Upload Kong Config Backup Artifact'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: kong-backup
         path: kong-backup.yaml
