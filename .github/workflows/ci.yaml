@@ -37,11 +37,13 @@ jobs:
         tar -xf deck.tar.gz -C /tmp
         sudo cp /tmp/deck /usr/local/bin/
 
+
+
     # Install Inso CLI which we will use for Linting and Testing: https://docs.insomnia.rest/inso-cli/introduction
 
     - name: Install Inso CLI tool
       run: |
-        curl -sL https://github.com/Kong/insomnia/releases/download/core%4010.0.0/inso-linux-10.1.1.tar.xz -o inso.tar.xz
+        curl -sL https://github.com/Kong/insomnia/releases/download/core%4010.3.1/inso-linux-arm64-10.3.1.tar.xz -o inso.tar.xz
         tar -xf inso.tar.xz -C /tmp
         sudo cp /tmp/inso /usr/local/bin/
 
