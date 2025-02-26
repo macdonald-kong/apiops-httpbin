@@ -9,7 +9,7 @@ contents: |-2
     info:
       version: '1.0'
       title: HTTPBin-Headers
-      description: HTTPBin Headers Demonstration Spec v1.0
+      description: HTTPBin Headers Demonstration Spec v1.1
       contact: 
         email: david.macdonald@konghq.com
 
