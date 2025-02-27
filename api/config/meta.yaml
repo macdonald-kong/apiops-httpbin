@@ -6,4 +6,4 @@ productDeprecated: false
 portalId: "d3a1b06e-b09a-4eb9-bc9c-c18fd1b9a2bc"
 deleted: false
 sharedFlowAuth: false
-sharedFlowObservability: true
+sharedFlowObservability: false
