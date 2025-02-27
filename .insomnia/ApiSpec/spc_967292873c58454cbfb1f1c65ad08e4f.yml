@@ -22,7 +22,7 @@ contents: |-2
 
     paths:
 
-      /v1/headers:
+      /headers:
         get:
           summary: Returns the request headers.
           description: Header service
