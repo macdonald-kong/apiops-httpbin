@@ -284,6 +284,23 @@ jobs:
           -d @$entry
         done
 
+    # Link our API to a Gateway Service
+
+    - name: Link API to Gateway Service
+      if: ${{ env.DELETED == 'false' }}
+      id: link-api-to-service
+      run: |
+        curl \
+          --url ${{ vars.KONNECT_ADDRESS }}/v3/apis/${{ env.API_PRODUCT_ID }}/implementations \
+          --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
+          --header 'Content-Type: application/json' \
+          --data "{
+            \"service\": {
+              \"control_plane_id\": \"${{ env.KONNECT_CONTROL_PLANE_ID }}\",
+              \"id\": \"${{ env.SERVICE_ID}}\"
+            }
+          }"
+
     #######################################
     #
     #   TESTING STAGE
