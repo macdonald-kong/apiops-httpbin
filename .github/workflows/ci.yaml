@@ -255,13 +255,13 @@ jobs:
             --url ${{ vars.KONNECT_ADDRESS }}/v3/apis \
             --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
             --header 'Content-Type: application/json' \
-            --data '{
-              "name":"${{ env.API_PRODUCT_NAME }}",
-              "description":"${{ env.API_PRODUCT_DESCRIPTION }}",
-              "spec_content": $SPEC_CONTENT,
-              "version": "v1",
-              "attributes": {"env":["production"],"domains":["web","mobile"]}
-            }' | jq -r .id)" >> "$GITHUB_ENV"
+            --data "{
+              \"name\": \"${{ env.API_PRODUCT_NAME }}\",
+              \"description\": \"${{ env.API_PRODUCT_DESCRIPTION }}\",
+              \"spec_content\": $SPEC_CONTENT,
+              \"version\": \"v1\",
+              \"attributes\": {\"env\": [\"production\"], \"domains\": [\"web\", \"mobile\"]}
+            }" | jq -r .id)" >> "$GITHUB_ENV"
         fi
 
     # Base64 encode each markdown file in the portal_assets folder and inject each into the required json payload to send to the Konnect API Products API
