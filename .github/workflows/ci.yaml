@@ -250,6 +250,7 @@ jobs:
       run: |
         echo API_PRODUCT_ID: ${{ env.API_PRODUCT_ID }}
         if [[ "${{ env.API_PRODUCT_ID }}" == "null" ]]; then
+          SPEC_CONTENT=$(jq -Rs . < ./api/oas.yaml)
           echo "API_PRODUCT_ID=$(curl \
             --url ${{ vars.KONNECT_ADDRESS }}/v3/apis \
             --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
@@ -257,7 +258,9 @@ jobs:
             --data '{
               "name":"${{ env.API_PRODUCT_NAME }}",
               "description":"${{ env.API_PRODUCT_DESCRIPTION }}",
-              "spec_content": ""
+              "spec_content": $SPEC_CONTENT,
+              "version": "v1",
+              "attributes": {"env":["production"],"domains":["web","mobile"]}
             }' | jq -r .id)" >> "$GITHUB_ENV"
         fi
 
