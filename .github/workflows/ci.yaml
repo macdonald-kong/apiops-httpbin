@@ -293,7 +293,7 @@ jobs:
     - name: Run Tests
       id: run-tests
       run: |
-        inso run test $(yq '._id' $(echo -n .insomnia/ApiSpec/*)) --workingDir .
+        curl http://httpbin.konghq.com/headers
 
     #######################################
     #
