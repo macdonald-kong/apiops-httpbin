@@ -193,7 +193,6 @@ jobs:
     # Set a Variable containing the Service ID of the Service that we deployed - we need this to link the API Product to a Kong Service
 
     - name: Get Service ID
-      if: ${{ env.DELETED == 'false' }}
       id: get-service-id
       run: |
         echo "SERVICE_ID=$(curl \
