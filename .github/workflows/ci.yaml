@@ -59,11 +59,7 @@ jobs:
         echo "API_PRODUCT_NAME=$(yq .productName ./api/config/meta.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_DESCRIPTION=$(yq .productDescription ./api/config/meta.yaml)" >> $GITHUB_ENV
         echo "API_PRODUCT_VERSION=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_ENV
-        echo "API_PRODUCT_PUBLISH=$(yq .productPublish ./api/config/meta.yaml)" >> $GITHUB_ENV
-        echo "API_PRODUCT_DEPRECATED=$(yq .productDeprecated ./api/config/meta.yaml)" >> $GITHUB_ENV
-        echo "API_PRODUCT_VERSION_STATUS=$(yq .productVersionStatus ./api/config/meta.yaml)" >> $GITHUB_ENV
         echo "PORTAL_ID=$(yq .portalId ./api/config/meta.yaml)" >> $GITHUB_ENV
-        echo "DELETED=$(yq .deleted ./api/config/meta.yaml)" >> $GITHUB_ENV
 
     # The Konnect Control Plane Name and API Product Names might include characters that need to be URL encoded.
 
@@ -90,7 +86,6 @@ jobs:
     # Check that the OpenAPI Specification file that we exported from the Insomnia Workspace is valid and well formed
 
     - name: Lint OpenAPI Spec
-      if: ${{ env.DELETED == 'false' }}
       run: |
         inso lint spec ./api/oas.yaml
 
@@ -112,7 +107,6 @@ jobs:
     # Use decKs openapi2kong command to generate Kong Declarative Configuration from the OpenAPI Specification exported from the Insomnia Workspace.
 
     - name: Generate Kong declarative configuration from Spec
-      if: ${{ env.DELETED == 'false' }}
       run: |
         deck file openapi2kong \
           --spec ./api/oas.yaml \
@@ -124,33 +118,28 @@ jobs:
     # Use decK Merge to merge together our generated Kong Declarative Configuration File with the contents of the Plugin folder in our repository
 
     - name: Merge Kong Configuration with Plugins
-      if: ${{ env.DELETED == 'false' }}
       run: |
         deck file merge kong-generated.yaml ./api/plugins/* -o kong.yaml
 
     # Update Gateway Service Name so that it matches our plugins
 
     - name: Update Gateway Service Name
-      if: ${{ env.DELETED == 'false' }}
       run: |
         yq eval '.services[0].name = "${{ env.DECK_GATEWAY_SERVICE_NAME }}"' -i kong.yaml
 
     # Use decK Validate to check that the new generated Kong Declarative Configuration is valid
 
     - name: Tag Kong declarative configuration with service name
-      if: ${{ env.DELETED == 'false' }}
       run: |
         cat kong.yaml | deck file add-tags ${{ env.DECK_GATEWAY_SERVICE_NAME }} --output-file kong.yaml
 
     - name: Validate Kong declarative configuration
-      if: ${{ env.DELETED == 'false' }}
       run: |
         deck file validate kong.yaml 
 
     # Publishes Kong Declarative Configuration as an artifact
 
     - name: 'Upload Kong Config Artifact'
-      if: ${{ env.DELETED == 'false' }}
       uses: actions/upload-artifact@v4
       with:
         name: ${{ env.DECK_GATEWAY_SERVICE_NAME }}-api-kong-config
@@ -165,7 +154,6 @@ jobs:
     # Compare the new desired state represented in the generated Kong Declarative Configuration with the current state of the platform
 
     - name: Diff declarative config
-      if: ${{ env.DELETED == 'false' }}
       run: |
         deck gateway diff kong.yaml \
           --konnect-addr ${{ vars.KONNECT_ADDRESS }} \
@@ -194,7 +182,6 @@ jobs:
     # Uses the deck sync command to push our generated Kong Declarative Configuration to the Kong Konnect Control Plane
 
     - name: Deploy declarative config to development environment
-      if: ${{ env.DELETED == 'false' }}
       id: deploy-declarative-config
       run: |
         deck gateway sync kong.yaml \
@@ -223,7 +210,6 @@ jobs:
     # Checks if an API Version already exists so that we don't create a duplicate each time this is run
 
     - name: Get API ID if it already exists
-      if: ${{ env.DELETED == 'false' }}
       id: get-api-product-id
       run: |
           echo "API_PRODUCT_ID=$(curl \
@@ -235,7 +221,6 @@ jobs:
     # Create a new API if the API ID from the previous script is null
 
     - name: Create API
-      if: ${{ env.DELETED == 'false' }}
       id: create-api
       run: |
         echo API_PRODUCT_ID: ${{ env.API_PRODUCT_ID }}
@@ -257,7 +242,6 @@ jobs:
     # Base64 encode each markdown file in the portal_assets folder and inject each into the required json payload to send to the Konnect API Products API
 
     - name: Prepare Static Documentation
-      if: ${{ env.DELETED == 'false' }}
       id: prepare-static-docs
       run: |
         mkdir docs
@@ -273,7 +257,6 @@ jobs:
     # For each of the Json payloads that we have generated in the previous step, send them to the API Products Documents API to upload
 
     - name: Upload Static Documentation
-      if: ${{ env.DELETED == 'false' }}
       id: upload-static-docs
       run: |
         for entry in "./docs"/*
@@ -287,7 +270,6 @@ jobs:
     # Link our API to a Gateway Service
 
     - name: Link API to Gateway Service
-      if: ${{ env.DELETED == 'false' }}
       id: link-api-to-service
       run: |
         curl \
@@ -310,49 +292,24 @@ jobs:
     # Run the tests defined in our Insomnia Test Suite
 
     - name: Run Tests
-      if: ${{ env.DELETED == 'false' }}
       id: run-tests
       run: |
         inso run test $(yq '._id' $(echo -n .insomnia/ApiSpec/*)) --workingDir .
 
     #######################################
     #
-    #   DEPLOY TO PORTAL STAGE
+    #   PUBLISH TO PORTAL STAGE
     #
     #######################################
 
     - name: Publish to Developer Portal
-      if: ${{ env.DELETED == 'false' }}
       run: |
-        if [[ "${{ env.API_PRODUCT_PUBLISH }}" == true ]]; then
-            curl --request PATCH \
-              --url "${{ vars.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}" \
-              --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
-              --header 'Content-Type: application/json' \
-              --header 'accept: application/json' \
-              --data '{"portal_ids":["${{ env.PORTAL_ID }}"]}'
-        else
-            curl --request PATCH \
-              --url "${{ vars.KONNECT_ADDRESS }}/v2/api-products/${{ env.API_PRODUCT_ID }}" \
-              --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
-              --header 'Content-Type: application/json' \
-              --header 'accept: application/json' \
-              --data '{"portal_ids":[]}'
-        fi
-
-    #######################################
-    #
-    #   DELETION FLOW
-    #
-    #######################################
-
-    - name: Delete Service Routes and Plugins
-      if: ${{ env.DELETED == 'true' }}
-      id: deck-reset
-      run: |
-        deck gateway reset \
-          --konnect-addr "${{ vars.KONNECT_ADDRESS }}" \
-          --konnect-token ${{ secrets.KONNECT_TOKEN }} \
-          --konnect-control-plane-name "${{ vars.KONNECT_CONTROL_PLANE_NAME }}" \
-          --select-tag ${{ env.DECK_GATEWAY_SERVICE_NAME }} \
-          --force
+        curl --request PUT \
+          --url ${{ vars.KONNECT_ADDRESS }}/v3/apis/${{ env.API_PRODUCT_ID }}/publications/${{ env.PORTAL_ID}} \
+          --header "Authorization: Bearer ${{ secrets.KONNECT_TOKEN }}" \
+          --header 'Content-Type: application/json' \
+          --header 'accept: application/json' \
+          --data '{
+          "auto_approve_registrations": false,
+          "visibility": "public"
+        }'
