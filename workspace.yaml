@@ -70,9 +70,9 @@ spec:
     info:
       version: "1.0"
       title: HTTPBin-Headers
-      description: HTTPBin Headers Demo Spec v1.0
+      description: HTTPBin Headers Demo Spec v1.2
       contact:
-        email: david.macdonald@konghq.com
+        email: david.macdonald1234@konghq.com
     servers:
       - url: https://httpbin.konghq.com
     tags:
