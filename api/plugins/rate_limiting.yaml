@@ -2,5 +2,5 @@ plugins:
 - name: rate-limiting
   service: ${{ env "DECK_GATEWAY_SERVICE_NAME" }}
   config:
-    minute: 20
+    minute: 10
     policy: local
