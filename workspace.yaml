@@ -24,9 +24,6 @@ collection:
           description: Header service
           sortKey: -1743075736437
         method: GET
-        scripts:
-          preRequest: ""
-          afterResponse: ""
         settings:
           renderRequestBody: true
           encodeUrl: true
@@ -35,9 +32,6 @@ collection:
             send: true
             store: true
           rebuildPath: true
-    scripts:
-      afterResponse: ""
-      preRequest: ""
 cookieJar:
   name: Default Jar
   meta:
@@ -72,7 +66,7 @@ spec:
       title: HTTPBin-Headers
       description: HTTPBin Headers Demo Spec v1.5
       contact:
-        email: david.macdonald1234@konghq.com
+        email: david.macdonald@konghq.com
     servers:
       - url: https://httpbin.konghq.com
     tags:
@@ -103,4 +97,4 @@ spec:
   meta:
     id: spc_4806d202d77f40b483499db28f4c0747
     created: 1743075711491
-    modified: 1755204205298
+    modified: 1762209523250
