@@ -65,7 +65,7 @@ spec:
     info:
       version: "1.0"
       title: HTTPBin-Headers
-      description: HTTPBin Headers Demo Spec v1.2
+      description: HTTPBin Headers Demo Spec v1.3
       contact:
         email: david.macdonald@konghq.com
     servers:
@@ -98,4 +98,4 @@ spec:
   meta:
     id: spc_4806d202d77f40b483499db28f4c0747
     created: 1743075711491
-    modified: 1764283255169
+    modified: 1764283340867
