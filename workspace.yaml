@@ -1,4 +1,5 @@
 type: spec.insomnia.rest/5.0
+schema_version: "5.1"
 name: APIOps
 meta:
   id: wrk_18745debb6d7411ebae1715d974cf1a7
@@ -64,7 +65,7 @@ spec:
     info:
       version: "1.0"
       title: HTTPBin-Headers
-      description: HTTPBin Headers Demo Spec v1.1
+      description: HTTPBin Headers Demo Spec v1.2
       contact:
         email: david.macdonald@konghq.com
     servers:
@@ -97,4 +98,4 @@ spec:
   meta:
     id: spc_4806d202d77f40b483499db28f4c0747
     created: 1743075711491
-    modified: 1762252473239
+    modified: 1764283255169
